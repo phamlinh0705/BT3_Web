@@ -55,3 +55,31 @@ CÁCH ĐÁNH GIÁ:
 4. nodered api trả về json, test được: 2đ
 5. front-end có js gọi được api nodered, nhận về json, hiển thị được kết quả từ json này. 2đ
 6. Bài làm có dấu ấn, giải thích rõ ràng, hiểu vấn đề: 2đ
+
+ Bài Làm
+1. Cài đặt môi trường linux: SV chọn 1 trong các phương án
+    - enable wsl: cài đặt ubuntu
+      
+ <img width="1909" height="1071" alt="image" src="https://github.com/user-attachments/assets/01ca4f54-59ff-46ed-aeac-1684ef80fe5a" />
+
+2. Cài đặt Docker (nếu dùng docker desktop trên windows thì nó có ngay)
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/515b7dd5-41e7-4491-b17a-4ed7da6b2cbd" />
+
+3. Sử dụng 1 file docker-compose.yml để cài đặt các docker container sau: 
+   mariadb (3306), phpmyadmin (8080), nodered/node-red (1880), influxdb (8086), grafana/grafana (3000), nginx (80,443)
+
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d539d938-7c11-4a34-9126-388cc4a06c24" />
+
+4. Lập trình web frontend+backend:
+ 4.2 Web IOT: Giám sát dữ liệu IOT.
+ - Tạo web dạng Single Page Application (SPA), chỉ gồm 1 file index.html, toàn bộ giao diện do javascript sinh động.
+ - Có tính năng login, lưu phiên đăng nhập vào cookie và session
+   Thông tin login lưu trong cơ sở dữ liệu của mariadb, được dev quản trị bằng phpmyadmin, yêu cầu sử dụng mã hoá khi gửi login.
+   Chỉ cần login 1 lần, bao giờ logout thì mới phải login lại.
+ - hiển thị giá trị mới nhất của các thông số đang giám sát, khi click vào thì hiển thị đồ thị lịch sử quá trình thay đổi (gọi grafana iframe để hiển thị)
+ - backend: Sử dụng nodered để đọc dữ liệu từ các cảm biến (có thể dùng api online để lấy dữ liệu theo giời gian thực), 
+   nodered sẽ lưu dữ liệu mới nhất (dạng update) vào cơ sở dữ liệu mariadb (sử dụng phpmyadmin để tạp table và quản trị lần đầu)
+   nodered sẽ lưu dữ liệu (insert) vào influxdb để lưu giá trị lịch sử, để cho grafana dùng để hiển thị biểu đồ.
+
+   
