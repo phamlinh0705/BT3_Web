@@ -1,0 +1,183 @@
+[
+    {
+        "id": "70148981b68ee3e9",
+        "type": "tab",
+        "label": "Flow 5",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "59bfc4f5c1e6011b",
+        "type": "http in",
+        "z": "70148981b68ee3e9",
+        "name": "",
+        "url": "/order/create",
+        "method": "post",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 90,
+        "y": 60,
+        "wires": [
+            [
+                "737af7fecf6f9a6e"
+            ]
+        ]
+    },
+    {
+        "id": "737af7fecf6f9a6e",
+        "type": "function",
+        "z": "70148981b68ee3e9",
+        "name": "Tạo SQL Transaction",
+        "func": "const { customerInfo, cartItems, totalAmount, userId } = msg.payload;\n\n// --- Bắt đầu Transaction ---\nlet sql = \"START TRANSACTION; \";\n\n// --- 1. Thêm vào bảng 'orders' ---\n// (Lưu ý: Chúng ta dùng hàm SQL '?' để chèn dữ liệu an toàn)\n// (Chúng ta sẽ dùng 1 node mysql riêng để escape chuỗi)\nlet sqlInsertOrder = \"INSERT INTO orders (user_id, customer_name, customer_phone, shipping_address, total_amount, status) VALUES (?, ?, ?, ?, ?, 'pending');\";\n\n// Chuẩn bị các giá trị\nlet orderValues = [\n    userId,\n    customerInfo.name,\n    customerInfo.phone,\n    customerInfo.address,\n    totalAmount\n];\n\n// Lưu lại các giá trị này\nmsg.orderValues = orderValues;\nmsg.sqlInsertOrder = sqlInsertOrder;\n\n// Lưu lại cartItems\nmsg.cartItems = cartItems;\n\n// Gửi lệnh START TRANSACTION\nmsg.topic = \"START TRANSACTION;\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 60,
+        "wires": [
+            [
+                "846656ad885b7a0b"
+            ]
+        ]
+    },
+    {
+        "id": "846656ad885b7a0b",
+        "type": "mysql",
+        "z": "70148981b68ee3e9",
+        "mydb": "",
+        "name": "START TRAN",
+        "x": 620,
+        "y": 60,
+        "wires": [
+            [
+                "167bcd6afcccc515"
+            ]
+        ]
+    },
+    {
+        "id": "167bcd6afcccc515",
+        "type": "function",
+        "z": "70148981b68ee3e9",
+        "name": "Insert Order",
+        "func": "// Gửi lệnh Insert Order\nmsg.topic = msg.sqlInsertOrder;\nmsg.payload = msg.orderValues;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 60,
+        "wires": [
+            [
+                "10ae2fdc0655e098"
+            ]
+        ]
+    },
+    {
+        "id": "10ae2fdc0655e098",
+        "type": "mysql",
+        "z": "70148981b68ee3e9",
+        "mydb": "",
+        "name": "Run Insert Order",
+        "x": 850,
+        "y": 140,
+        "wires": [
+            [
+                "da6edd3f6f5730a8"
+            ]
+        ]
+    },
+    {
+        "id": "da6edd3f6f5730a8",
+        "type": "function",
+        "z": "70148981b68ee3e9",
+        "name": "Insert Items",
+        "func": "// Lấy ID của đơn hàng vừa tạo\nconst orderId = msg.payload.insertId;\n\nif (!orderId) {\n    // Nếu không tạo được order, huỷ transaction\n    msg.topic = \"ROLLBACK;\";\n    msg.payload = { success: false, message: \"Lỗi khi tạo đơn hàng.\" };\n    // Gửi thẳng tới node \"COMMIT/ROLLBACK\"\n    return [null, msg];\n}\n\n// --- 2. Thêm vào bảng 'order_items' ---\nlet sqlInsertItems = \"INSERT INTO order_items (order_id, product_id, quantity, price_per_unit) VALUES \";\nlet itemValues = [];\n\nmsg.cartItems.forEach((item, index) => {\n    sqlInsertItems += \"(?, ?, ?, ?)\";\n    if (index < msg.cartItems.length - 1) {\n        sqlInsertItems += \", \";\n    }\n\n    itemValues.push(orderId);\n    itemValues.push(item.product_id);\n    itemValues.push(item.quantity);\n    itemValues.push(item.price_per_unit);\n});\n\nmsg.topic = sqlInsertItems;\nmsg.payload = itemValues;\n\n// Lưu orderId để trả về cho client\nmsg.orderId = orderId;\n\n// Output 1: Gửi lệnh Insert Items\n// Output 2: Chuẩn bị cho trường hợp lỗi (sẽ bị node mysql chặn)\nreturn [msg, null];",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 850,
+        "y": 240,
+        "wires": [
+            [
+                "a2601fa63296187b"
+            ]
+        ]
+    },
+    {
+        "id": "a2601fa63296187b",
+        "type": "mysql",
+        "z": "70148981b68ee3e9",
+        "mydb": "",
+        "name": "Run Insert Items",
+        "x": 840,
+        "y": 340,
+        "wires": [
+            [
+                "f531045a78a2b2a3"
+            ]
+        ]
+    },
+    {
+        "id": "f531045a78a2b2a3",
+        "type": "function",
+        "z": "70148981b68ee3e9",
+        "name": "COMMIT/ROLLBACK",
+        "func": "// Kiểm tra xem có lỗi ở bước trước không\nif (msg.error) {\n    msg.topic = \"ROLLBACK;\";\n    msg.payload = { success: false, message: \"Lỗi khi thêm sản phẩm vào đơn hàng.\" };\n} else {\n    msg.topic = \"COMMIT;\";\n    // Chỉ giữ lại payload thành công\n    msg.payload = { success: true, orderId: msg.orderId };\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 420,
+        "wires": [
+            [
+                "be414668c08626c9"
+            ]
+        ]
+    },
+    {
+        "id": "be414668c08626c9",
+        "type": "mysql",
+        "z": "70148981b68ee3e9",
+        "mydb": "",
+        "name": "Run COMMIT/ROLLBACK",
+        "x": 540,
+        "y": 520,
+        "wires": [
+            [
+                "ad9589400c8fb146"
+            ]
+        ]
+    },
+    {
+        "id": "ad9589400c8fb146",
+        "type": "http response",
+        "z": "70148981b68ee3e9",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 810,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "0ce532430934c71d",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-node-mysql": "2.0.0"
+        }
+    }
+]
