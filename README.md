@@ -68,6 +68,8 @@ CÁCH ĐÁNH GIÁ:
 
 3. Sử dụng 1 file docker-compose.yml để cài đặt các docker container sau: 
    mariadb (3306), phpmyadmin (8080), nodered/node-red (1880), influxdb (8086), grafana/grafana (3000), nginx (80,443)
+   
+<img width="1910" height="1064" alt="image" src="https://github.com/user-attachments/assets/f473ad5f-8671-4907-a8f5-fa0c4587d680" />
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d539d938-7c11-4a34-9126-388cc4a06c24" />
 
@@ -89,4 +91,18 @@ CÁCH ĐÁNH GIÁ:
 
    <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/347cde5a-cc74-41a9-9bca-b158afbe5b50" />
 
+<img width="1463" height="680" alt="image" src="https://github.com/user-attachments/assets/b11b0708-3ae6-40a9-bd6e-efae84a96249" />
+
+<img width="1441" height="668" alt="image" src="https://github.com/user-attachments/assets/72a5da48-509b-4631-bd66-bd44608948d4" />
+
+5. Thiết kế web (Frontend + Backend):
+- Truy cập node red và vài các thư viện:
+  
+<img width="1515" height="943" alt="image" src="https://github.com/user-attachments/assets/eb263212-f344-4f4d-876f-8263b5d68ab7" />
+
+<img width="724" height="667" alt="image" src="https://github.com/user-attachments/assets/2cd2d2a9-6f37-40b4-a520-03d0b9f5dfe0" />
+
+<img width="702" height="662" alt="image" src="https://github.com/user-attachments/assets/be99aba4-92a5-48de-bad9-ac272df14a16" />
+
+<img width="1913" height="1079" alt="image" src="https://github.com/user-attachments/assets/85cad539-8682-425d-9720-89b3d61f849b" />
 
